@@ -1,0 +1,12 @@
+# Gerado automaticamente pelo template airflow-dgb.
+# NÃO editar manualmente. Para atualizar: copier update
+_src_path: {{ _copier_conf.src_path }}
+_commit: {{ _copier_conf.commit }}
+project_name: {{ project_name }}
+astro_runtime_version: {{ astro_runtime_version }}
+python_requirements: {{ python_requirements | tojson }}
+postgres_connection: {{ postgres_connection | tojson }}
+extra_env_vars: {{ extra_env_vars | tojson }}
+has_plugins: {{ has_plugins }}
+plugin_modules: {{ plugin_modules | tojson if has_plugins else '""' }}
+airflowignore_extras: {{ airflowignore_extras | tojson }}

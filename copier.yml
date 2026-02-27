@@ -1,0 +1,60 @@
+_min_copier_version: "9.0.0"
+_exclude:
+  - _plan
+  - scripts
+  - /README.md
+  - copier.yml
+  - .git
+_answers_file: .copier-answers.yml
+_skip_if_exists:
+  - "airflow/docker-compose.override.yml"
+
+# --- Questions ---
+
+project_name:
+  type: str
+  help: "Nome do repositório (ex: data-science, scraper)"
+
+astro_runtime_version:
+  type: str
+  default: "3.0-14"
+  help: "Versão do Astro Runtime (tag da imagem Docker)"
+
+python_requirements:
+  type: str
+  default: "psycopg2-binary>=2.9.9"
+  help: "Dependências Python para requirements.txt (uma por linha)"
+  multiline: true
+
+postgres_connection:
+  type: str
+  default: "postgresql://USER:PASS@HOST:5432/govbrnews"
+  help: "Connection string template para .env.example"
+
+extra_env_vars:
+  type: str
+  default: ""
+  help: "Variáveis de ambiente adicionais para .env.example (uma por linha, formato KEY=VALUE)"
+  multiline: true
+
+has_plugins:
+  type: bool
+  default: false
+  help: "Repo tem plugins em src/ para montar no Airflow?"
+
+plugin_modules:
+  type: str
+  default: ""
+  help: "Módulos src/ separados por vírgula (ex: news_enrichment,other_plugin)"
+  when: "{{ has_plugins }}"
+
+airflowignore_extras:
+  type: str
+  default: ""
+  help: "Padrões adicionais para .airflowignore (um por linha)"
+  multiline: true
+
+# --- Post-generation tasks ---
+
+_tasks:
+  - "cd airflow && ln -sfn ../dags dags 2>/dev/null || true"
