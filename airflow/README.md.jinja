@@ -106,7 +106,43 @@ Consulte o `.env.example` para ver quais connections este projeto precisa.
 
 ## Plugins e Volume Mounts
 
-Symlinks não funcionam dentro de containers Docker. Para montar plugins locais, use `docker-compose.override.yml`:
+Symlinks não funcionam dentro de containers Docker. Para montar código Python local (`src/`), use `docker-compose.override.yml` com volume mounts.
+
+Existem duas opções de montagem, dependendo do tipo de código:
+
+### Opção A: `include/` (recomendado para pacotes Python)
+
+Use quando o código em `src/` é um pacote Python comum (importado pela DAG via `from meu_pacote import ...`). O Airflow **não escaneia** `include/`, evitando erros de import.
+
+Requer adicionar ao `Dockerfile`:
+
+```dockerfile
+ENV PYTHONPATH="${PYTHONPATH}:/usr/local/airflow/include"
+```
+
+```yaml
+services:
+  scheduler:
+    volumes:
+      - ../src/meu_pacote:/usr/local/airflow/include/meu_pacote:ro
+      - ../dags:/usr/local/airflow/dags:ro
+  dag-processor:
+    volumes:
+      - ../src/meu_pacote:/usr/local/airflow/include/meu_pacote:ro
+      - ../dags:/usr/local/airflow/dags:ro
+  api-server:
+    volumes:
+      - ../src/meu_pacote:/usr/local/airflow/include/meu_pacote:ro
+      - ../dags:/usr/local/airflow/dags:ro
+  triggerer:
+    volumes:
+      - ../src/meu_pacote:/usr/local/airflow/include/meu_pacote:ro
+      - ../dags:/usr/local/airflow/dags:ro
+```
+
+### Opção B: `plugins/` (para plugins Airflow nativos)
+
+Use quando o código define plugins Airflow nativos (custom hooks, operators, macros). O Airflow **escaneia** `plugins/` na inicialização, então os módulos devem ser importáveis como standalone (sem relative imports entre módulos).
 
 ```yaml
 services:
@@ -127,6 +163,8 @@ services:
       - ../src/meu_plugin:/usr/local/airflow/plugins/meu_plugin:ro
       - ../dags:/usr/local/airflow/dags:ro
 ```
+
+> **Nota**: Em produção (Cloud Composer), ambos os casos são deployados para o bucket `plugins/`, que apenas adiciona ao PYTHONPATH sem scan. A distinção `plugins/` vs `include/` é relevante apenas no ambiente local.
 
 ---
 
@@ -178,7 +216,11 @@ pip install copier
 
 ### `ModuleNotFoundError` em DAGs
 
-O plugin não está montado no container. Verifique `docker-compose.override.yml` e confirme que os volume mounts estão corretos para todos os serviços (scheduler, dag-processor, api-server, triggerer).
+O plugin não está montado no container. Verifique `docker-compose.override.yml` e confirme que os volume mounts estão corretos para todos os serviços (scheduler, dag-processor, api-server, triggerer). Se estiver usando `include/`, verifique se o `Dockerfile` tem `ENV PYTHONPATH="${PYTHONPATH}:/usr/local/airflow/include"`.
+
+### `Failed to import plugin` nos logs
+
+O Airflow escaneia `plugins/` e tenta importar cada `.py` como módulo standalone. Se seu código usa relative imports (`from .modulo import ...`), esses imports falham no scan. Solução: monte em `include/` em vez de `plugins/` (ver seção "Plugins e Volume Mounts").
 
 ### `astro dev start` falha com erro de porta
 
