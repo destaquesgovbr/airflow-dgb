@@ -26,15 +26,21 @@ python_requirements:
   help: "Dependências Python para requirements.txt (uma por linha)"
   multiline: true
 
+# A resposta vai para airflow/.env.example e .copier-answers.yml, ambos versionados:
+# use só placeholders. A connection string real fica no airflow/.env (gitignored).
 postgres_connection:
   type: str
   default: "postgresql://USER:PASS@HOST:5432/govbrnews"
-  help: "Connection string template para .env.example"
+  help: "Connection string de EXEMPLO para .env.example (versionado). Use placeholders: a real vai só no airflow/.env"
+  validator: >-
+    {% if '@' in postgres_connection and ':PASS@' not in postgres_connection %}
+    Use placeholders (ex.: postgresql://USER:PASS@HOST:5432/govbrnews): .env.example e .copier-answers.yml são versionados
+    {% endif %}
 
 extra_env_vars:
   type: str
   default: ""
-  help: "Variáveis de ambiente adicionais para .env.example (uma por linha, formato KEY=VALUE)"
+  help: "Variáveis adicionais para .env.example (uma por linha, KEY=VALUE). Versionado: só placeholders, nunca segredos reais"
   multiline: true
 
 has_plugins:
