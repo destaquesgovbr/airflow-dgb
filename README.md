@@ -62,8 +62,11 @@ repo/
 | `project_name` | — | Nome do repo (ex: `data-science`) |
 | `astro_runtime_version` | `3.0-14` | Tag da imagem Astro Runtime |
 | `python_requirements` | `psycopg2-binary>=2.9.9` | Deps Python (uma por linha) |
-| `postgres_connection` | `postgresql://USER:PASS@HOST:5432/govbrnews` | Connection string para .env.example |
-| `extra_env_vars` | — | Vars adicionais para .env.example |
+| `postgres_connection` | `postgresql://USER:PASS@HOST:5432/govbrnews` | Connection string **de exemplo** para .env.example (só placeholders; validado) |
+| `extra_env_vars` | — | Vars adicionais para .env.example (só placeholders) |
+
+> ⚠️ `airflow/.env.example` e `.copier-answers.yml` são **versionados**: responda só com placeholders.
+> Credenciais reais vão no `airflow/.env` (gitignored), lidas do Secret Manager.
 | `has_plugins` | `false` | Tem plugins em `src/`? |
 | `plugin_modules` | — | Módulos src/ (se has_plugins=true) |
 | `airflowignore_extras` | — | Padrões adicionais para .airflowignore |
